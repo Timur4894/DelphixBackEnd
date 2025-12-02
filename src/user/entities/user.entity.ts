@@ -19,7 +19,7 @@ export class User {
   @Column({ length: 255 })
   password_hash: string;
 
-  @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({default: () => 'now()'})
   created_at: Date;
 
   @Column({ length: 255, nullable: true })

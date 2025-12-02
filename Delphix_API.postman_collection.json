@@ -1,0 +1,515 @@
+{
+	"info": {
+		"_postman_id": "delphix-api-collection-v2",
+		"name": "Delphix API",
+		"description": "Полная API коллекция для Delphix Backend\n\nПеременные:\n- base_url: http://localhost:3000\n- access_token: автоматически сохраняется после логина",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Signup",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\",\n  \"user_name\": \"testuser\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/signup",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "signup"]
+						},
+						"description": "Регистрация нового пользователя. Возвращает пользователя и access_token."
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.access_token) {",
+									"        pm.collectionVariables.set(\"access_token\", jsonData.access_token);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/login",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "login"]
+						},
+						"description": "Вход в систему. Токен автоматически сохраняется в переменную access_token."
+					}
+				}
+			]
+		},
+		{
+			"name": "User",
+			"item": [
+				{
+					"name": "Get All Users",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user",
+							"host": ["{{base_url}}"],
+							"path": ["user"]
+						},
+						"description": "Получить список всех пользователей (требуется авторизация)"
+					}
+				},
+				{
+					"name": "Get Me",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/me",
+							"host": ["{{base_url}}"],
+							"path": ["user", "me"]
+						},
+						"description": "Получить информацию о текущем авторизованном пользователе"
+					}
+				},
+				{
+					"name": "Get User by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/:id",
+							"host": ["{{base_url}}"],
+							"path": ["user", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Получить пользователя по ID"
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"email\": \"newemail@example.com\",\n  \"user_name\": \"newname\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/:id",
+							"host": ["{{base_url}}"],
+							"path": ["user", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Обновить информацию о пользователе"
+					}
+				},
+				{
+					"name": "Delete User",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/user/:id",
+							"host": ["{{base_url}}"],
+							"path": ["user", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Удалить пользователя"
+					}
+				}
+			]
+		},
+		{
+			"name": "Company",
+			"item": [
+				{
+					"name": "Get All Companies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/company",
+							"host": ["{{base_url}}"],
+							"path": ["company"]
+						},
+						"description": "Получить список всех компаний с пагинацией (по умолчанию page=1, limit=10).\n\nВозвращает:\n- data: массив компаний\n- pagination: метаданные пагинации (page, limit, total, totalPages)"
+					}
+				},
+				{
+					"name": "Search Companies",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/company?search=AAPL&page=1&limit=10",
+							"host": ["{{base_url}}"],
+							"path": ["company"],
+							"query": [
+								{"key": "search", "value": "AAPL", "description": "Поиск по названию или тикеру"},
+								{"key": "page", "value": "1", "description": "Номер страницы (по умолчанию 1)"},
+								{"key": "limit", "value": "10", "description": "Количество элементов на странице (по умолчанию 10, максимум 100)"}
+							]
+						},
+						"description": "Поиск компаний по названию или тикеру с пагинацией.\n\nПараметры:\n- search: поисковый запрос (поиск по названию или тикеру, регистронезависимый)\n- page: номер страницы (по умолчанию 1)\n- limit: количество элементов на странице (по умолчанию 10, максимум 100)\n\nПримеры:\n- ?search=Apple - найти все компании с 'Apple' в названии или тикере\n- ?search=AAPL - найти компанию с тикером AAPL\n- ?page=2&limit=20 - вторая страница, 20 элементов\n- ?search=Tech&page=1&limit=5 - поиск 'Tech', первая страница, 5 элементов"
+					}
+				},
+				{
+					"name": "Get Companies with Pagination",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/company?page=2&limit=20",
+							"host": ["{{base_url}}"],
+							"path": ["company"],
+							"query": [
+								{"key": "page", "value": "2", "description": "Номер страницы"},
+								{"key": "limit", "value": "20", "description": "Количество элементов на странице"}
+							]
+						},
+						"description": "Получить компании с пагинацией без поиска.\n\nПараметры:\n- page: номер страницы (по умолчанию 1)\n- limit: количество элементов на странице (по умолчанию 10, максимум 100)"
+					}
+				},
+				{
+					"name": "Search Companies Only",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/company?search=Microsoft",
+							"host": ["{{base_url}}"],
+							"path": ["company"],
+							"query": [
+								{"key": "search", "value": "Microsoft", "description": "Поиск по названию или тикеру"}
+							]
+						},
+						"description": "Поиск компаний без указания пагинации (используются значения по умолчанию: page=1, limit=10).\n\nПараметры:\n- search: поисковый запрос (поиск по названию или тикеру, регистронезависимый)"
+					}
+				},
+				{
+					"name": "Get Company by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/company/:id",
+							"host": ["{{base_url}}"],
+							"path": ["company", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Получить компанию по ID. На этом экране пользователь может купить/продать акции."
+					}
+				},
+				{
+					"name": "Buy/Sell Stock",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"BUY\",\n  \"quantity\": 10,\n  \"price_per_share\": 150.50,\n  \"notes\": \"Optional note\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/company/:id/transaction",
+							"host": ["{{base_url}}"],
+							"path": ["company", ":id", "transaction"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Купить или продать акции компании. Автоматически обновляет portfolio_companies.\n\nТипы:\n- BUY: покупка акций\n- SELL: продажа акций\n\nПараметры:\n- quantity: количество акций\n- price_per_share: цена за акцию\n- notes: опциональная заметка"
+					}
+				}
+			]
+		},
+		{
+			"name": "Portfolio Companies",
+			"item": [
+				{
+					"name": "Get My Portfolio",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/portfolio-companies",
+							"host": ["{{base_url}}"],
+							"path": ["portfolio-companies"]
+						},
+						"description": "Получить все компании в портфеле пользователя с расчетом прибыли/убытка.\n\nВозвращает:\n- shares: количество акций\n- avg_price: средняя цена покупки\n- current_price: текущая цена\n- total_invested: общая сумма инвестиций\n- current_value: текущая стоимость\n- profit_loss: прибыль/убыток в деньгах\n- profit_loss_percent: прибыль/убыток в процентах"
+					}
+				},
+				{
+					"name": "Get Portfolio Company by ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/portfolio-companies/:id",
+							"host": ["{{base_url}}"],
+							"path": ["portfolio-companies", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Получить компанию из портфеля по ID"
+					}
+				},
+				{
+					"name": "Get Portfolio Company by Ticker",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/portfolio-companies/ticker/:ticker",
+							"host": ["{{base_url}}"],
+							"path": ["portfolio-companies", "ticker", ":ticker"],
+							"variable": [{"key": "ticker", "value": "AAPL"}]
+						},
+						"description": "Получить компанию из портфеля по тикеру (например, AAPL, MSFT)"
+					}
+				},
+				{
+					"name": "Get Company Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/portfolio-companies/ticker/:ticker/transactions",
+							"host": ["{{base_url}}"],
+							"path": ["portfolio-companies", "ticker", ":ticker", "transactions"],
+							"variable": [{"key": "ticker", "value": "AAPL"}]
+						},
+						"description": "Получить все транзакции по конкретной компании из портфеля.\n\nИспользуется для экрана деталей компании - показывает все покупки/продажи этой компании.\n\nВозвращает:\n- portfolio_company: информация о компании в портфеле\n- transactions: список всех транзакций (BUY/SELL)"
+					}
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Create Transaction by Ticker",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"BUY\",\n  \"quantity\": 10,\n  \"price_per_share\": 150.50,\n  \"notes\": \"Optional note\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transactions/company/:ticker",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "company", ":ticker"],
+							"variable": [{"key": "ticker", "value": "AAPL"}]
+						},
+						"description": "Создать транзакцию напрямую по тикеру компании"
+					}
+				},
+				{
+					"name": "Get All My Transactions",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transactions",
+							"host": ["{{base_url}}"],
+							"path": ["transactions"]
+						},
+						"description": "Получить все транзакции текущего пользователя, отсортированные по дате (новые сначала)"
+					}
+				},
+				{
+					"name": "Get Transactions by Company Ticker",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/transactions/company/:ticker",
+							"host": ["{{base_url}}"],
+							"path": ["transactions", "company", ":ticker"],
+							"variable": [{"key": "ticker", "value": "AAPL"}]
+						},
+						"description": "Получить все транзакции по конкретному тикеру компании"
+					}
+				}
+			]
+		},
+		{
+			"name": "News",
+			"item": [
+				{
+					"name": "Get All News",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/news",
+							"host": ["{{base_url}}"],
+							"path": ["news"]
+						},
+						"description": "Получить все новости"
+					}
+				},
+				{
+					"name": "Get News by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/news/:id",
+							"host": ["{{base_url}}"],
+							"path": ["news", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Получить новость по ID"
+					}
+				}
+			]
+		},
+		{
+			"name": "Forecasts",
+			"item": [
+				{
+					"name": "Get All Forecasts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/forecasts",
+							"host": ["{{base_url}}"],
+							"path": ["forecasts"]
+						},
+						"description": "Получить все прогнозы"
+					}
+				},
+				{
+					"name": "Get Forecast by ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/forecasts/:id",
+							"host": ["{{base_url}}"],
+							"path": ["forecasts", ":id"],
+							"variable": [{"key": "id", "value": "1"}]
+						},
+						"description": "Получить прогноз по ID"
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -1,34 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Req, UseGuards, NotFoundException, Query } from '@nestjs/common';
 import { CompanyService } from './company.service';
-import { CreateCompanyDto } from './dto/create-company.dto';
-import { UpdateCompanyDto } from './dto/update-company.dto';
+import { TransactionsService } from '../transactions/transactions.service';
+import { CreateTransactionDto } from '../transactions/dto/create-transaction.dto';
+import { SearchCompanyDto } from './dto/search-company.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('company')
 export class CompanyController {
-  constructor(private readonly companyService: CompanyService) {}
-
-  @Post()
-  create(@Body() createCompanyDto: CreateCompanyDto) {
-    return this.companyService.create(createCompanyDto);
-  }
-
+  constructor(
+    private readonly companyService: CompanyService,
+    private readonly transactionsService: TransactionsService,
+  ) {}
+  
   @Get()
-  findAll() {
-    return this.companyService.findAll();
+  findAll(@Query() searchDto: SearchCompanyDto) {
+    return this.companyService.findAll(searchDto);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
+  async findOne(@Param('id') id: string) {
     return this.companyService.findOne(+id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateCompanyDto: UpdateCompanyDto) {
-    return this.companyService.update(+id, updateCompanyDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.companyService.remove(+id);
+  @Post(':id/transaction')
+  @UseGuards(JwtAuthGuard)
+  async createTransaction(
+    @Req() req: any,
+    @Param('id') id: string,
+    @Body() createTransactionDto: CreateTransactionDto,
+  ) {
+    const company = await this.companyService.findOne(+id);
+    if (!company) {
+      throw new NotFoundException('Company not found');
+    }
+    
+    return this.transactionsService.create(
+      req.user.id,
+      company.ticker,
+      createTransactionDto,
+    );
   }
 }

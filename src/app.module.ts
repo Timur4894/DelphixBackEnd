@@ -13,6 +13,8 @@ import { NewsItem } from './news/entities/news.entity';
 import { PortfolioCompany } from './portfolio-companies/entities/portfolio-company.entity';
 import { Company } from './company/entities/company.entity';
 import { Transaction } from './transactions/entities/transaction.entity';
+import { AuthModule } from './auth/auth.module';
+import { TransactionsModule } from './transactions/transactions.module';
 import * as dotenv from 'dotenv';
 dotenv.config();
 
@@ -26,7 +28,7 @@ dotenv.config();
       rejectUnauthorized: false,
     },
   }),
-    UserModule, PortfolioCompaniesModule, NewsModule, ForecastsModule, CompanyModule],
+    UserModule, PortfolioCompaniesModule, NewsModule, ForecastsModule, CompanyModule, AuthModule, TransactionsModule],
   controllers: [AppController],
   providers: [AppService],
 })

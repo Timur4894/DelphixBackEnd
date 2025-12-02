@@ -39,12 +39,9 @@ export class Transaction {
   @Column('float')
   total_cost: number;
 
-  @Column()
+  @Column({default: () => 'CURRENT_TIMESTAMP'})
   date: Date;
 
   @Column('text', { nullable: true })
   notes?: string;
 }
-
-
-
