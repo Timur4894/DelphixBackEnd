@@ -138,7 +138,7 @@ export default [
       "ticker": "ADBE",
       "name": "Adobe Inc.",
       "description": "Adobe develops creative and digital solutions for design, video production, marketing, and document workflows. Its major products include Photoshop, Illustrator, Premiere Pro, and Acrobat.",
-      "logo_url": "https://logo.clearbit.com/adobe.com"
+      "logo_url": "https://images.seeklogo.com/logo-png/0/1/adobe-logo-png_seeklogo-3451.png"
     },
     {
       "ticker": "CRM",

@@ -27,3 +27,4 @@ export class TransactionsController {
     return this.transactionsService.getCompanyTransactions(req.user.id, ticker);
   }
 }
+

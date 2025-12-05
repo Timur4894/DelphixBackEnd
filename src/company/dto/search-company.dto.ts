@@ -20,3 +20,5 @@ export class SearchCompanyDto {
   limit?: number = 10; // Количество элементов на странице (по умолчанию 10)
 }
 
+
+

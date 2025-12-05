@@ -21,10 +21,8 @@ export class PortfolioCompaniesService {
     });
 
     // Добавляем расчет прибыли/убытка для каждой компании
-    // TODO: В будущем можно получать текущую цену из API
-    // Пока используем avg_price как базовую цену для расчета
     return portfolioCompanies.map((pc) => {
-      const currentPrice = pc.avg_price; // В будущем: получить из API
+      const currentPrice = pc.avg_price; // Используем среднюю цену покупки
       const totalInvested = pc.shares * pc.avg_price;
       const currentValue = pc.shares * currentPrice;
       const profitLoss = currentValue - totalInvested;
@@ -58,8 +56,8 @@ export class PortfolioCompaniesService {
       return null;
     }
 
-    // Добавляем расчет прибыли/убытка
-    const currentPrice = portfolioCompany.avg_price; // В будущем: получить из API
+    // Используем среднюю цену покупки
+    const currentPrice = portfolioCompany.avg_price;
     const totalInvested = portfolioCompany.shares * portfolioCompany.avg_price;
     const currentValue = portfolioCompany.shares * currentPrice;
     const profitLoss = currentValue - totalInvested;
@@ -92,8 +90,8 @@ export class PortfolioCompaniesService {
       return null;
     }
 
-    // Добавляем расчет прибыли/убытка
-    const currentPrice = portfolioCompany.avg_price; // В будущем: получить из API
+    // Используем среднюю цену покупки
+    const currentPrice = portfolioCompany.avg_price;
     const totalInvested = portfolioCompany.shares * portfolioCompany.avg_price;
     const currentValue = portfolioCompany.shares * currentPrice;
     const profitLoss = currentValue - totalInvested;

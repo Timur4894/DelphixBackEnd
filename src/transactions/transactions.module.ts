@@ -15,3 +15,5 @@ import { PortfolioCompany } from '../portfolio-companies/entities/portfolio-comp
 })
 export class TransactionsModule {}
 
+
+

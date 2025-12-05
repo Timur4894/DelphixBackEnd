@@ -19,16 +19,24 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 @Module({
-  imports: [TypeOrmModule.forRoot({
-    type: 'postgres',
-    url: process.env.SUPABASE_DB_URL,
-    entities: [User, PortfolioCompany, NewsItem, Forecast, Company, Transaction],
-    synchronize: true, 
-    ssl: {
-      rejectUnauthorized: false,
-    },
-  }),
-    UserModule, PortfolioCompaniesModule, NewsModule, ForecastsModule, CompanyModule, AuthModule, TransactionsModule],
+  imports: [
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      url: process.env.SUPABASE_DB_URL,
+      entities: [User, PortfolioCompany, NewsItem, Forecast, Company, Transaction],
+      synchronize: true, 
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    }),
+    UserModule, 
+    PortfolioCompaniesModule, 
+    NewsModule, 
+    ForecastsModule, 
+    CompanyModule, 
+    AuthModule, 
+    TransactionsModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
