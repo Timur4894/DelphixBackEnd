@@ -146,12 +146,12 @@ export default [
       "description": "Salesforce is the leading provider of cloud-based CRM software, offering tools for marketing automation, analytics, customer service, sales operations, and business integration.",
       "logo_url": "https://logo.clearbit.com/salesforce.com"
     },
-    {
-      "ticker": "IBM",
-      "name": "International Business Machines Corporation",
-      "description": "IBM is a global technology company specializing in hybrid cloud solutions, enterprise computing, quantum computing, and AI platforms such as IBM Watson.",
-      "logo_url": "https://logo.clearbit.com/ibm.com"
-    },
+    // {
+    //   "ticker": "IBM",
+    //   "name": "International Business Machines Corporation",
+    //   "description": "IBM is a global technology company specializing in hybrid cloud solutions, enterprise computing, quantum computing, and AI platforms such as IBM Watson.",
+    //   "logo_url": "https://logo.clearbit.com/ibm.com"
+    // },
   
     {
       "ticker": "AMD",
@@ -260,7 +260,7 @@ export default [
       "ticker": "T",
       "name": "AT&T Inc.",
       "description": "AT&T is a major telecommunications provider offering wireless services, broadband, fiber internet, and enterprise communication solutions.",
-      "logo_url": "https://logo.clearbit.com/att.com"
+      "logo_url": "https://I.clearbit.com/att.com"
     },
     {
       "ticker": "VZ",

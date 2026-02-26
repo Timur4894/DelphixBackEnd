@@ -4,7 +4,7 @@ import { Type } from 'class-transformer';
 export class SearchCompanyDto {
   @IsOptional()
   @IsString()
-  search?: string; // Поиск по названию или тикеру
+  search?: string;
 
   @IsOptional()
   @Type(() => Number)
@@ -19,6 +19,7 @@ export class SearchCompanyDto {
   @Max(100)
   limit?: number = 10; // Количество элементов на странице (по умолчанию 10)
 }
+
 
 
 

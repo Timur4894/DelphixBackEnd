@@ -17,6 +17,29 @@ export class CompanyController {
     return this.companyService.findAll(searchDto);
   }
 
+  @Get('by-ticker')
+  findByTicker(@Query('ticker') ticker: string) {
+    return this.companyService.findOneByTicker(ticker);
+  }
+
+  @Get('external-search')
+    async externalSearch(
+      @Query('q') q: string,
+      @Query('page') page = 1,
+      @Query('limit') limit = 10,
+    ) {
+      return this.companyService.searchCompaniesFromFinnhub(
+        q,
+        +page,
+        +limit,
+      );
+  }
+
+  @Get('top')
+  getTopCompanies() {
+    return this.companyService.getTopCompaniesWithQuotes(10);
+  }
+
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return this.companyService.findOne(+id);
