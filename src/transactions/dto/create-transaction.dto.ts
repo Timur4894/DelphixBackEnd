@@ -13,12 +13,7 @@ export class CreateTransactionDto {
   @IsNumber()
   @IsNotEmpty()
   @Min(0.01)
-  quantity: number; // Количество акций
-
-  @IsNumber()
-  @IsNotEmpty()
-  @Min(0.01)
-  price_per_share: number; // Цена за акцию
+  quantity: number;
 
   @IsString()
   @IsOptional()

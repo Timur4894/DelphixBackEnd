@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { PortfolioCompany } from './entities/portfolio-company.entity';
@@ -13,6 +13,61 @@ export class PortfolioCompaniesService {
     private readonly companyRepository: Repository<Company>,
   ) {}
 
+  private async getCurrentPriceForTicker(ticker: string): Promise<number | null> {
+    const apiKey = process.env.FINNHUB_API_KEY;
+    if (!apiKey) {
+      throw new InternalServerErrorException('FINNHUB_API_KEY is not set');
+    }
+
+    if (!ticker?.trim()) {
+      return null;
+    }
+
+    try {
+      const res = await fetch(
+        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(
+          ticker,
+        )}&token=${apiKey}`,
+      );
+
+      if (!res.ok) {
+        throw new Error(`Finnhub quote error: ${res.status}`);
+      }
+
+      const quote = await res.json();
+      const price = typeof quote?.c === 'number' ? quote.c : null;
+      return price;
+    } catch {
+      // Если котировку получить не удалось — вернем null, дальше используем avg_price
+      return null;
+    }
+  }
+
+  private async buildPortfolioView(pc: PortfolioCompany) {
+    const livePrice = await this.getCurrentPriceForTicker(pc.ticker);
+    const currentPrice = livePrice ?? pc.avg_price;
+
+    const totalInvested = pc.shares * pc.avg_price;
+    const currentValue = pc.shares * currentPrice;
+    const profitLoss = currentValue - totalInvested;
+    const profitLossPercent =
+      totalInvested > 0 ? (profitLoss / totalInvested) * 100 : 0;
+
+    return {
+      id: pc.id,
+      ticker: pc.ticker,
+      company: pc.company,
+      shares: pc.shares,
+      avg_price: pc.avg_price,
+      current_price: currentPrice,
+      total_invested: totalInvested,
+      current_value: currentValue,
+      profit_loss: profitLoss,
+      profit_loss_percent: profitLossPercent,
+      created_at: pc.created_at,
+    };
+  }
+
   async findAll(userId: number) {
     const portfolioCompanies = await this.portfolioCompanyRepository.find({
       where: { user_id: userId },
@@ -20,30 +75,8 @@ export class PortfolioCompaniesService {
       order: { created_at: 'DESC' },
     });
 
-    // Добавляем расчет прибыли/убытка для каждой компании
-    return portfolioCompanies.map((pc) => {
-      const currentPrice = pc.avg_price; // Используем среднюю цену покупки
-      const totalInvested = pc.shares * pc.avg_price;
-      const currentValue = pc.shares * currentPrice;
-      const profitLoss = currentValue - totalInvested;
-      const profitLossPercent = totalInvested > 0 
-        ? ((profitLoss / totalInvested) * 100) 
-        : 0;
-
-      return {
-        id: pc.id,
-        ticker: pc.ticker,
-        company: pc.company,
-        shares: pc.shares,
-        avg_price: pc.avg_price,
-        current_price: currentPrice,
-        total_invested: totalInvested,
-        current_value: currentValue,
-        profit_loss: profitLoss,
-        profit_loss_percent: profitLossPercent,
-        created_at: pc.created_at,
-      };
-    });
+    // Для каждой позиции считаем прибыль/убыток исходя из ТЕКУЩЕЙ цены с Finnhub
+    return Promise.all(portfolioCompanies.map((pc) => this.buildPortfolioView(pc)));
   }
 
   async findOne(userId: number, id: number) {
@@ -55,29 +88,7 @@ export class PortfolioCompaniesService {
     if (!portfolioCompany) {
       return null;
     }
-
-    // Используем среднюю цену покупки
-    const currentPrice = portfolioCompany.avg_price;
-    const totalInvested = portfolioCompany.shares * portfolioCompany.avg_price;
-    const currentValue = portfolioCompany.shares * currentPrice;
-    const profitLoss = currentValue - totalInvested;
-    const profitLossPercent = totalInvested > 0 
-      ? ((profitLoss / totalInvested) * 100) 
-      : 0;
-
-    return {
-      id: portfolioCompany.id,
-      ticker: portfolioCompany.ticker,
-      company: portfolioCompany.company,
-      shares: portfolioCompany.shares,
-      avg_price: portfolioCompany.avg_price,
-      current_price: currentPrice,
-      total_invested: totalInvested,
-      current_value: currentValue,
-      profit_loss: profitLoss,
-      profit_loss_percent: profitLossPercent,
-      created_at: portfolioCompany.created_at,
-    };
+    return this.buildPortfolioView(portfolioCompany);
   }
 
   async findByTicker(userId: number, ticker: string) {
@@ -89,28 +100,23 @@ export class PortfolioCompaniesService {
     if (!portfolioCompany) {
       return null;
     }
+    return this.buildPortfolioView(portfolioCompany);
+  }
 
-    // Используем среднюю цену покупки
-    const currentPrice = portfolioCompany.avg_price;
-    const totalInvested = portfolioCompany.shares * portfolioCompany.avg_price;
-    const currentValue = portfolioCompany.shares * currentPrice;
-    const profitLoss = currentValue - totalInvested;
-    const profitLossPercent = totalInvested > 0 
-      ? ((profitLoss / totalInvested) * 100) 
-      : 0;
+  async removeByTicker(userId: number, ticker: string) {
+    const existing = await this.portfolioCompanyRepository.findOne({
+      where: { user_id: userId, ticker },
+    });
+
+    if (!existing) {
+      throw new NotFoundException('Portfolio holding not found');
+    }
+
+    await this.portfolioCompanyRepository.remove(existing);
 
     return {
-      id: portfolioCompany.id,
-      ticker: portfolioCompany.ticker,
-      company: portfolioCompany.company,
-      shares: portfolioCompany.shares,
-      avg_price: portfolioCompany.avg_price,
-      current_price: currentPrice,
-      total_invested: totalInvested,
-      current_value: currentValue,
-      profit_loss: profitLoss,
-      profit_loss_percent: profitLossPercent,
-      created_at: portfolioCompany.created_at,
+      message: 'Holding removed from portfolio',
+      ticker,
     };
   }
 }

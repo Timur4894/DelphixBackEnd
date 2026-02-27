@@ -1,9 +1,10 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import { Injectable, BadRequestException, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Transaction } from './entities/transaction.entity';
 import { PortfolioCompany } from '../portfolio-companies/entities/portfolio-company.entity';
 import { CreateTransactionDto } from './dto/create-transaction.dto';
+import { Company } from '../company/entities/company.entity';
 
 @Injectable()
 export class TransactionsService {
@@ -12,10 +13,72 @@ export class TransactionsService {
     private readonly transactionRepository: Repository<Transaction>,
     @InjectRepository(PortfolioCompany)
     private readonly portfolioCompanyRepository: Repository<PortfolioCompany>,
+    @InjectRepository(Company)
+    private readonly companyRepository: Repository<Company>,
   ) {}
 
+  private async getCurrentPriceForTicker(ticker: string): Promise<number> {
+    const apiKey = process.env.FINNHUB_API_KEY;
+    if (!apiKey) {
+      throw new InternalServerErrorException('FINNHUB_API_KEY is not set');
+    }
+
+    if (!ticker?.trim()) {
+      throw new BadRequestException('Ticker is required');
+    }
+
+    try {
+      const res = await fetch(
+        `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(
+          ticker,
+        )}&token=${apiKey}`,
+      );
+
+      if (!res.ok) {
+        throw new Error(`Finnhub quote error: ${res.status}`);
+      }
+
+      const quote = await res.json();
+      const price = typeof quote?.c === 'number' ? quote.c : null;
+      if (!price || price <= 0) {
+        throw new InternalServerErrorException(
+          'Failed to get valid current price from Finnhub',
+        );
+      }
+      return price;
+    } catch (error) {
+      throw new InternalServerErrorException(
+        'Failed to fetch current price from Finnhub',
+      );
+    }
+  }
+
+  private async ensureCompanyExists(ticker: string): Promise<void> {
+    const cleanTicker = ticker.trim().toUpperCase();
+    if (!cleanTicker) {
+      throw new BadRequestException('Ticker is required');
+    }
+
+    const existing = await this.companyRepository.findOne({
+      where: { ticker: cleanTicker },
+    });
+    if (existing) return;
+
+    const company = this.companyRepository.create({
+      ticker: cleanTicker,
+      name: cleanTicker,
+    });
+    await this.companyRepository.save(company);
+  }
+
   async create(userId: number, companyTicker: string, createTransactionDto: CreateTransactionDto) {
-    const { type, quantity, price_per_share, notes } = createTransactionDto;
+    const { type, quantity, notes } = createTransactionDto;
+
+    // Гарантируем, что компания существует в таблице companies (для FK)
+    await this.ensureCompanyExists(companyTicker);
+
+    // Берем актуальную цену акции с Finnhub
+    const price_per_share = await this.getCurrentPriceForTicker(companyTicker);
     const total_cost = quantity * price_per_share;
 
     // Создаем транзакцию

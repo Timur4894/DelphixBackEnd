@@ -31,12 +31,6 @@ export class NewsItem {
 
   @Column({ length: 500, nullable: true })
   url?: string;
-
-  @Column()
-  published_at: Date;
-
-  @CreateDateColumn({ default: () => 'CURRENT_TIMESTAMP' })
-  created_at: Date;
 }
 
   

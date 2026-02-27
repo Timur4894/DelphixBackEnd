@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Req, UseGuards, Delete } from '@nestjs/common';
 import { PortfolioCompaniesService } from './portfolio-companies.service';
 import { TransactionsService } from '../transactions/transactions.service';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -36,6 +36,11 @@ export class PortfolioCompaniesController {
   @Get('ticker/:ticker')
   findByTicker(@Req() req: any, @Param('ticker') ticker: string) {
     return this.portfolioCompaniesService.findByTicker(req.user.id, ticker);
+  }
+
+  @Delete('ticker/:ticker')
+  removeByTicker(@Req() req: any, @Param('ticker') ticker: string) {
+    return this.portfolioCompaniesService.removeByTicker(req.user.id, ticker);
   }
 
   @Get(':id')
