@@ -1,16 +1,16 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { ForecastsService } from './forecasts.service';
-import { CreateForecastDto } from './dto/create-forecast.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('forecasts')
+@UseGuards(JwtAuthGuard)
 export class ForecastsController {
   constructor(private readonly forecastsService: ForecastsService) {}
 
 
-
   @Get()
-  findAll() {
-    return this.forecastsService.findAll();
+  findAll(@Req() req: any) {
+    return this.forecastsService.getPersonalForecasts(req.user.id);
   }
 
 }

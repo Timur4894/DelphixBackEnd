@@ -8,5 +8,6 @@ import { PortfolioCompany } from '../portfolio-companies/entities/portfolio-comp
   imports: [TypeOrmModule.forFeature([PortfolioCompany])],
   controllers: [NewsController],
   providers: [NewsService],
+  exports: [NewsService],
 })
 export class NewsModule {}

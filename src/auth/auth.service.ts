@@ -30,7 +30,6 @@ export class AuthService {
     const saltRounds = 10;
     const password_hash = await bcrypt.hash(signupDto.password, saltRounds);
 
-    // Создаем пользователя
     const user = this.userRepository.create({
       email: signupDto.email,
       password_hash,
@@ -39,11 +38,10 @@ export class AuthService {
 
     const savedUser = await this.userRepository.save(user);
 
-    // Генерируем JWT токен
+    //  JWT token
     const payload = { sub: savedUser.id, email: savedUser.email };
     const access_token = this.jwtService.sign(payload);
 
-    // Возвращаем пользователя без пароля и токен
     return {
       user: {
         id: savedUser.id,

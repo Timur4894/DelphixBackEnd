@@ -18,13 +18,11 @@ export class PortfolioCompaniesController {
 
   @Get('ticker/:ticker/transactions')
   async getCompanyTransactions(@Req() req: any, @Param('ticker') ticker: string) {
-    // Получаем portfolio company для проверки что она существует
     const portfolioCompany = await this.portfolioCompaniesService.findByTicker(req.user.id, ticker);
     if (!portfolioCompany) {
       return { transactions: [], message: 'Company not found in portfolio' };
     }
 
-    // Получаем все транзакции по этому тикеру
     const transactions = await this.transactionsService.getCompanyTransactions(req.user.id, ticker);
     
     return {
